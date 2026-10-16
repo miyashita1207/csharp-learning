@@ -1,0 +1,46 @@
+name: Sync notes to Wiki
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "notes/**"
+      - ".github/scripts/sync-wiki.sh"
+      - ".github/workflows/sync-wiki.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-wiki
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Checkout wiki
+        uses: actions/checkout@v5
+        with:
+          repository: ${{ github.repository }}.wiki
+          path: wiki
+
+      - name: Copy notes into wiki
+        run: bash .github/scripts/sync-wiki.sh notes wiki
+
+      - name: Commit and push wiki
+        working-directory: wiki
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "Sync notes from ${GITHUB_SHA::7}"
+          git push
