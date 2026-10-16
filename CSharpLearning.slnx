@@ -1,2 +1,5 @@
 <Solution>
+  <Folder Name="/tests/">
+    <Project Path="tests/CSharpLearning.Tests/CSharpLearning.Tests.csproj" />
+  </Folder>
 </Solution>
